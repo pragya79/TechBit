@@ -18,7 +18,7 @@ function Home({ isAuth }) {
       setPostList(data.docs.map((doc) => ({ ...doc.data(), id: doc?.id })));
     };
     getPosts();
-  }, [deletePost]);
+  }, [deletePost,postCollectionRef]);
 
   return (
     <div className='homePage'>
