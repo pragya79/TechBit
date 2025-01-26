@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect,useCallback, useState } from 'react';
 import { collection, doc, getDocs, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase-config';
 import '../App.css';
@@ -7,11 +7,11 @@ function Home({ isAuth }) {
   const [postList, setPostList] = useState([]);
   const postCollectionRef = collection(db, 'posts');
 
-  const deletePost = async (id) => {
+  const deletePost = useCallback(async (id) => {
     const postDoc = doc(db, 'posts', id);
     await deleteDoc(postDoc);
-  };
-
+  }, []); 
+  
   useEffect(() => {
     const getPosts = async () => {
       const data = await getDocs(postCollectionRef);
