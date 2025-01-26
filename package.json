@@ -38,7 +38,9 @@
     ]
   },
   "babel": {
-    "presets": ["@babel/preset-env"],
+    "presets": [
+      "@babel/preset-env"
+    ],
     "plugins": [
       "@babel/plugin-transform-private-methods",
       "@babel/plugin-transform-numeric-separator",
@@ -46,5 +48,8 @@
       "@babel/plugin-transform-class-properties",
       "@babel/plugin-transform-optional-chaining"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }
