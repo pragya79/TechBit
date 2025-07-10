@@ -1,6 +1,6 @@
-# Blogsy
+# TechBit
 
-Blogsy is a user-friendly blog application that allows users to create, view, and delete posts. The platform uses Firebase for authentication and data storage, and Cloudinary to handle image uploads. Users can only delete the posts they have created, ensuring privacy and security for all content.
+TechBit is a user-friendly tech-blog application that allows users to create, view, and delete posts. The platform uses Firebase for authentication and data storage, and Cloudinary to handle image uploads. Users can only delete the posts they have created, ensuring privacy and security for all content.
 
 ## Features
 
@@ -83,8 +83,8 @@ To start the application locally, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/pragya79/Blogsy.git
-   cd blogsy
+   git clone https://github.com/pragya79/TechBit.git
+   cd TechBit
 2. **Install Dependencies**:
    ```bash
    npm install
