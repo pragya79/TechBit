@@ -10,7 +10,7 @@ function Login({ setIsAuth }) {
 
   const signInWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider);
       localStorage.setItem('isAuth', true);
       setIsAuth(true);
       navigate('/');

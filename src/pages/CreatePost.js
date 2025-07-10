@@ -10,7 +10,7 @@ function CreatePost({ isAuth }) {
   const [title, setTitle] = useState('');
   const [postText, setPostText] = useState('');
   const [image, setImage] = useState(null);
-  const [imageUrl, setImageUrl] = useState('');
+const [imageUrl] = useState('');
   const [instagram, setInstagram] = useState('');
   const [github, setGithub] = useState('');
   const quillRef = useRef(null);
