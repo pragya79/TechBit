@@ -1,25 +1,36 @@
-import React from 'react'
-import {auth,provider} from '../firebase-config';
-import { signInWithPopup } from 'firebase/auth';
-import {useNavigate} from 'react-router-dom';
-import '../App.css'
+import React from 'react';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { auth } from '../firebase-config';
+import { useNavigate } from 'react-router-dom';
+import '../App.css';
 
-function Login({setIsAuth}) {
-  const navigate=useNavigate();
-  const signInWithGoogle=()=>{
-    signInWithPopup(auth,provider).then((result)=>{
-      localStorage.setItem("isAuth",true);
+function Login({ setIsAuth }) {
+  const navigate = useNavigate();
+  const provider = new GoogleAuthProvider();
+
+  const signInWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      localStorage.setItem('isAuth', true);
       setIsAuth(true);
-      navigate("/");
-    });
-  }; 
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+    }
+  };
+
   return (
-    <div className='loginPage'>
-      <h1>Welcome to Blogsy</h1>
-      <h4>To continue further: </h4>
-      <button className="login-with-google-btn" onClick={signInWithGoogle}>Sign in with Google</button>
+    <div className="loginPage">
+      <div className="loginContent">
+        <h1>Welcome to TechBit</h1>
+        <h2>Share Your Tech Insights</h2>
+        <button className="get-started-btn" onClick={signInWithGoogle}>
+          Get Started
+        </button>
+        <p className="tagline">Join our community to post and explore tech blogs!</p>
+      </div>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;
