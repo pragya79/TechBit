@@ -3,7 +3,7 @@
 TechBit is an interactive, user-friendly tech-blog application that empowers developers and tech enthusiasts to **create, share, and manage** their own blogs with ease. It’s not just a blogging tool — it’s a stage to showcase your technical voice and project documentation.
 
 Built with ❤️ using Firebase for backend services and Cloudinary for seamless image handling, **TechBit** makes sure your ideas take center stage while ensuring **privacy, performance, and style**.
-
+![Girl Blogging on Laptop](https://github.com/ruth-ikegah/ruth-ikegah/assets/91118442/0c7b96c5-87cf-4b1b-8982-3087d0fa5033)
 
 ---
 
