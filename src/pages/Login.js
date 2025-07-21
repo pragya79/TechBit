@@ -1,22 +1,23 @@
 import React from 'react';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '../firebase-config';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, provider } from '../firebase-config';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 
-function Login({ setIsAuth }) {
+function Login() {
   const navigate = useNavigate();
-  const provider = new GoogleAuthProvider();
 
-  const signInWithGoogle = async () => {
-    try {
-      await signInWithPopup(auth, provider);
-      localStorage.setItem('isAuth', true);
-      setIsAuth(true);
-      navigate('/');
-    } catch (error) {
-      console.error('Error signing in with Google:', error);
-    }
+  const signInWithGoogle = () => {
+    console.log("Initiating Google Sign-In popup");
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        console.log("User signed in:", result.user);
+        localStorage.setItem('isAuth', true);
+        navigate('/createpost');
+      })
+      .catch((error) => {
+        console.error('Popup login error:', error.message, error.code);
+      });
   };
 
   return (

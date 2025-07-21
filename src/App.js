@@ -1,21 +1,37 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { useState } from 'react';
-import { signOut } from 'firebase/auth';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { auth } from './firebase-config';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import CreatePost from './pages/CreatePost';
 
 function App() {
+  const navigate = useNavigate();
   const [isAuth, setIsAuth] = useState(localStorage.getItem("isAuth") === "true");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    console.log("User from onAuthStateChanged:", user);
+    if (user) {
+      setIsAuth(true);
+      localStorage.setItem('isAuth', true);
+    } else {
+      setIsAuth(false);
+      localStorage.setItem('isAuth', false); // Use setItem instead of removeItem
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
+
   const signUserOut = () => {
     signOut(auth).then(() => {
-      localStorage.clear();
       setIsAuth(false);
-      window.location.pathname = "/login";
+      localStorage.clear();
+      navigate('/login');
     });
   };
 
@@ -24,7 +40,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <>
       <nav className="navbar">
         <div className="nav-container">
           <div className="brand">
@@ -34,7 +50,6 @@ function App() {
             <span className="hamburger-icon">☰</span>
           </button>
           <div className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
-            {/* <Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link> */}
             {!isAuth ? (
               <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
             ) : (
@@ -50,10 +65,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Home isAuth={isAuth} />} />
           <Route path="/createpost" element={<CreatePost isAuth={isAuth} />} />
-          <Route path="/login" element={<Login setIsAuth={setIsAuth} />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </main>
-    </Router>
+    </>
   );
 }
 

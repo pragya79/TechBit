@@ -1,4 +1,5 @@
-import React, { useEffect, useCallback, useState } from 'react';
+// Home.js
+import React, { useState, useEffect, useCallback } from 'react';
 import { collection, doc, getDocs, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase-config';
 import '../App.css';
@@ -11,15 +12,18 @@ function Home({ isAuth }) {
   const deletePost = useCallback(async (id) => {
     const postDoc = doc(db, 'posts', id);
     await deleteDoc(postDoc);
-  }, []); 
+    // Refresh posts after deletion
+    const data = await getDocs(postCollectionRef);
+    setPostList(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+  }, [postCollectionRef]);
 
   useEffect(() => {
     const getPosts = async () => {
       const data = await getDocs(postCollectionRef);
-      setPostList(data.docs.map((doc) => ({ ...doc.data(), id: doc?.id })));
+      setPostList(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     };
     getPosts();
-  }, [deletePost, postCollectionRef]);
+  }, [postCollectionRef]); // Remove deletePost from dependencies to prevent unnecessary fetches
 
   const openDialog = (post) => {
     setSelectedPost(post);
@@ -45,7 +49,7 @@ function Home({ isAuth }) {
               )}
             </div>
           </div>
-          <div className='postTextContainer'>{post.postText}</div>
+          <div className='postTextContainer' dangerouslySetInnerHTML={{ __html: post.postText }} />
           {post.imageUrl && (
             <div className='postImageContainer'>
               <img src={post.imageUrl} alt='Post' />
@@ -64,7 +68,7 @@ function Home({ isAuth }) {
               <button className='closeDialogBtn' onClick={closeDialog}>✖</button>
             </div>
             <div className='dialogContent'>
-              <div className='dialogText'>{selectedPost.postText}</div>
+              <div className='dialogText' dangerouslySetInnerHTML={{ __html: selectedPost.postText }} />
               {selectedPost.imageUrl && (
                 <div className='dialogImageContainer'>
                   <img src={selectedPost.imageUrl} alt='Post' />
