@@ -104,7 +104,7 @@ function CreatePost({ isAuth }) {
       console.log("ReactQuill content:", value);
       setPostText(value);
     }, 300),
-    []
+    [setPostText]
   );
 
   const createPost = async () => {
