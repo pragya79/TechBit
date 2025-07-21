@@ -103,7 +103,7 @@ function CreatePost({ isAuth }) {
     debounce((value) => {
       console.log("ReactQuill content:", value);
       setPostText(value);
-    }, 300),
+    }, 300), 
     [setPostText]
   );
 
