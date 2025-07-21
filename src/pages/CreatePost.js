@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { debounce } from 'lodash';
+import DOMPurify from 'dompurify';
 import '../App.css';
 
 const MemoizedQuill = memo(ReactQuill);
@@ -103,8 +104,8 @@ function CreatePost({ isAuth }) {
     debounce((value) => {
       console.log("ReactQuill content:", value);
       setPostText(value);
-    }, 300), 
-    [setPostText]
+    }, 300),
+    [setPostText] // Fixed: Includes setPostText in dependencies
   );
 
   const createPost = async () => {
@@ -112,12 +113,18 @@ function CreatePost({ isAuth }) {
       alert('Title and post content are required!');
       return;
     }
+    const cleanPostText = DOMPurify.sanitize(postText, {
+      ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'ol', 'ul', 'li', 'strong', 'em', 'u', 's', 'a', 'img'],
+      ALLOWED_ATTR: ['href', 'src'],
+      FORBID_TAGS: ['span'],
+    });
     const uploadedImageUrl = image ? await uploadImageToCloudinary(image) : imageUrl;
     const publicationDate = new Date().toISOString();
     try {
+      console.log("Saving postText:", cleanPostText);
       await addDoc(postCollectionRef, {
         title,
-        postText,
+        postText: cleanPostText,
         imageUrl: uploadedImageUrl,
         instagram,
         github,
