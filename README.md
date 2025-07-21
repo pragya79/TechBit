@@ -4,7 +4,6 @@ TechBit is an interactive, user-friendly tech-blog application that empowers dev
 
 Built with ❤️ using Firebase for backend services and Cloudinary for seamless image handling, **TechBit** makes sure your ideas take center stage while ensuring **privacy, performance, and style**.
 
-!(https://media.giphy.com/media/JtBZmzjyx4eBfSHTBQ/giphy.gif)
 
 ---
 
