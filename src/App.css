@@ -160,7 +160,8 @@ main {
 
 .inputGp input,
 .inputGp textarea,
-.quillEditor {
+.quillEditor,
+.inputGp select {
   font-size: 16px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
@@ -171,7 +172,8 @@ main {
 }
 
 .inputGp input:focus,
-.quillEditor:focus-within {
+.quillEditor:focus-within,
+.inputGp select:focus {
   outline: none;
   border-color: #2563eb;
 }
@@ -240,6 +242,7 @@ textarea {
   margin-top: 5px;
 }
 
+/* ===== Login Page ===== */
 .loginPage {
   width: 100vw;
   height: calc(100vh - 80px);
@@ -301,6 +304,7 @@ textarea {
   font-style: normal;
 }
 
+/* ===== Home Page ===== */
 .homePage {
   width: 100%;
   min-height: calc(100vh - 80px);
@@ -422,6 +426,7 @@ textarea {
   text-align: right;
 }
 
+/* ===== Dialog/Modal ===== */
 .dialogOverlay {
   position: fixed;
   top: 0;
@@ -524,6 +529,57 @@ textarea {
   text-align: right;
 }
 
+/* ===== New input styles ===== */
+
+/* File input (any file type) */
+.inputGp input[type="file"] {
+  cursor: pointer;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px;
+  background-color: #ffffff;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.inputGp input[type="file"]:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+/* Display selected file name */
+.inputGp p {
+  font-size: 14px;
+  color: #4b5563;
+  margin-top: 5px;
+}
+
+/* Category dropdown */
+.inputGp select {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  transition: border-color 0.3s ease;
+  cursor: pointer;
+}
+
+.inputGp select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.inputGp select::-ms-expand {
+  display: none;
+}
+
+.inputGp select option {
+  color: #1a1a1a;
+}
+
+/* ===== Responsive styles ===== */
 @media screen and (max-width: 768px) {
   .nav-container {
     padding: 0 15px;
@@ -620,6 +676,17 @@ textarea {
   .quillEditor .ql-editor {
     min-height: 150px;
   }
+
+  .inputGp input[type="file"],
+  .inputGp select {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .inputGp p {
+    font-size: 12px;
+  }
 }
 
 @media screen and (max-width: 480px) {
@@ -687,5 +754,16 @@ textarea {
 
   .quillEditor .ql-editor {
     min-height: 100px;
+  }
+
+  .inputGp input[type="file"],
+  .inputGp select {
+    width: 100%;
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  .inputGp p {
+    font-size: 12px;
   }
 }

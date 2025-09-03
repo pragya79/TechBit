@@ -1,7 +1,8 @@
+// CreatePost.js
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase-config';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { debounce } from 'lodash';
@@ -11,42 +12,34 @@ import '../App.css';
 const MemoizedQuill = memo(ReactQuill);
 
 function CreatePost({ isAuth }) {
-  const [title, setTitle] = useState('');
-  const [postText, setPostText] = useState('');
+  const location = useLocation();
+  const existingPost = location.state?.post || null; // 👈 Get post object if editing
+  const [title, setTitle] = useState(existingPost ? existingPost.title : '');
+  const [postText, setPostText] = useState(existingPost ? existingPost.postText : '');
   const [image, setImage] = useState(null);
-  const [imageUrl] = useState('');
-  const [instagram, setInstagram] = useState('');
-  const [github, setGithub] = useState('');
+  const [file, setFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState(existingPost ? existingPost.imageUrl : '');
+  const [fileUrl, setFileUrl] = useState(existingPost ? existingPost.fileUrl : '');
+  const [instagram, setInstagram] = useState(existingPost ? existingPost.instagram : '');
+  const [github, setGithub] = useState(existingPost ? existingPost.github : '');
+  const [category, setCategory] = useState(existingPost ? existingPost.category : 'Technical');
   const quillRef = useRef(null);
   const navigate = useNavigate();
   const postCollectionRef = collection(db, 'posts');
 
   useEffect(() => {
-    console.log("CreatePost rendered, state:", { title, postText, image, instagram, github, isAuth });
-  }, [title, postText, image, instagram, github, isAuth]);
-
-  useEffect(() => {
-    console.log("CreatePost isAuth:", isAuth);
-    console.log("quillRef:", quillRef.current);
-    if (!isAuth) {
-      console.log("Redirecting to / because isAuth is false");
-      navigate('/');
-    }
+    if (!isAuth) navigate('/');
   }, [isAuth, navigate]);
 
+  // Upload image to Cloudinary
   const uploadImageToCloudinary = async (file) => {
     if (file) {
-      console.log("Uploading image:", file.name);
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', 'blog-site');
       try {
-        const response = await fetch(
-          'https://api.cloudinary.com/v1_1/du7j4qpni/image/upload',
-          { method: 'POST', body: formData }
-        );
+        const response = await fetch('https://api.cloudinary.com/v1_1/du7j4qpni/image/upload', { method: 'POST', body: formData });
         const data = await response.json();
-        console.log("Cloudinary response:", data);
         return data.secure_url;
       } catch (error) {
         console.error('Error uploading image:', error);
@@ -56,33 +49,39 @@ function CreatePost({ isAuth }) {
     return '';
   };
 
-  const handleImageUpload = async () => {
-    try {
-      const input = document.createElement('input');
-      input.setAttribute('type', 'file');
-      input.setAttribute('accept', 'image/*');
-      input.click();
-      input.onchange = async () => {
-        const file = input.files[0];
-        if (file) {
-          const imageUrl = await uploadImageToCloudinary(file);
-          if (imageUrl && quillRef.current) {
-            const quill = quillRef.current.getEditor();
-            let range = quill.getSelection();
-            if (!range) {
-              const length = quill.getLength();
-              range = { index: length - 1, length: 0 };
-            }
-            quill.insertEmbed(range.index, 'image', imageUrl);
-            quill.setSelection(range.index + 1, 0);
-          } else {
-            console.error("Image upload failed or quillRef is null");
-          }
-        }
-      };
-    } catch (error) {
-      console.error("handleImageUpload error:", error);
+  // Upload general file to Cloudinary
+  const uploadFileToCloudinary = async (file) => {
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'blog-site');
+      try {
+        const response = await fetch('https://api.cloudinary.com/v1_1/du7j4qpni/raw/upload', { method: 'POST', body: formData });
+        const data = await response.json();
+        return data.secure_url;
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        return '';
+      }
     }
+    return '';
+  };
+
+  const handleImageUpload = async () => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (file && quillRef.current) {
+        const imageUrl = await uploadImageToCloudinary(file);
+        const quill = quillRef.current.getEditor();
+        let range = quill.getSelection() || { index: quill.getLength() - 1, length: 0 };
+        quill.insertEmbed(range.index, 'image', imageUrl);
+        quill.setSelection(range.index + 1, 0);
+      }
+    };
   };
 
   const modules = {
@@ -94,65 +93,77 @@ function CreatePost({ isAuth }) {
         ['link', 'image'],
         ['clean']
       ],
-      handlers: {
-        image: handleImageUpload
-      }
+      handlers: { image: handleImageUpload }
     }
   };
 
   const debouncedSetPostText = useCallback(
-    debounce((value) => {
-      console.log("ReactQuill content:", value);
-      setPostText(value);
-    }, 300),
+    debounce((value) => setPostText(value), 300),
     [setPostText]
   );
 
-  const createPost = async () => {
+  const handleSubmit = async () => {
     if (!title || !postText) {
-      alert('Title and post content are required!');
+      alert('Title and content are required!');
       return;
     }
+
     const cleanPostText = DOMPurify.sanitize(postText, {
       ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'ol', 'ul', 'li', 'strong', 'em', 'u', 's', 'a', 'img'],
       ALLOWED_ATTR: ['href', 'src'],
       FORBID_TAGS: ['span'],
     });
+
     const uploadedImageUrl = image ? await uploadImageToCloudinary(image) : imageUrl;
+    const uploadedFileUrl = file ? await uploadFileToCloudinary(file) : fileUrl;
     const publicationDate = new Date().toISOString();
+
     try {
-      console.log("Saving postText:", cleanPostText);
-      await addDoc(postCollectionRef, {
-        title,
-        postText: cleanPostText,
-        imageUrl: uploadedImageUrl,
-        instagram,
-        github,
-        publicationDate,
-        author: {
-          name: auth.currentUser?.displayName,
-          id: auth.currentUser?.uid,
-        },
-      });
+      if (existingPost) {
+        // ✅ Update existing post
+        const postDoc = doc(db, 'posts', existingPost.id);
+        await updateDoc(postDoc, {
+          title,
+          postText: cleanPostText,
+          imageUrl: uploadedImageUrl,
+          fileUrl: uploadedFileUrl,
+          instagram,
+          github,
+          category,
+          publicationDate
+        });
+      } else {
+        // ✅ Create new post
+        await addDoc(postCollectionRef, {
+          title,
+          postText: cleanPostText,
+          imageUrl: uploadedImageUrl,
+          fileUrl: uploadedFileUrl,
+          instagram,
+          github,
+          category,
+          publicationDate,
+          author: { name: auth.currentUser?.displayName, id: auth.currentUser?.uid }
+        });
+      }
       navigate('/');
     } catch (error) {
-      console.error("Error creating post:", error);
+      console.error('Error saving post:', error);
     }
   };
 
   return (
     <div className='createPostPage'>
       <div className='cpContainer'>
-        <h2>Create a New Post</h2>
+        <h2>{existingPost ? 'Edit Post' : 'Create a New Post'}</h2>
+
+        {/* Title */}
         <div className='inputGp'>
           <label>Title</label>
-          <input
-            type='text'
-            placeholder='Enter post title...'
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+          <input type='text' placeholder='Enter post title...' value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
+
+        {/* Content */}
         <div className='inputGp'>
           <label>Content</label>
           <MemoizedQuill
@@ -163,36 +174,48 @@ function CreatePost({ isAuth }) {
             modules={modules}
             placeholder='Write your post content here...'
             className='quillEditor'
-            readOnly={false}
           />
         </div>
+
+        {/* Featured Image */}
         <div className='inputGp'>
           <label>Featured Image (Optional)</label>
-          <input
-            type='file'
-            accept='image/*'
-            onChange={(e) => setImage(e.target.files[0])}
-          />
+          <input type='file' accept='image/*' onChange={(e) => setImage(e.target.files[0])} />
+          {imageUrl && !image && <p>📷 Current Image: <a href={imageUrl} target="_blank" rel="noopener noreferrer">View</a></p>}
         </div>
+
+        {/* General File */}
+        <div className='inputGp'>
+          <label>Attach File (Optional)</label>
+          <input type='file' onChange={(e) => setFile(e.target.files[0])} />
+          {file?.name && <p>📂 Selected: {file.name}</p>}
+          {fileUrl && !file && <p>📎 Current File: <a href={fileUrl} target="_blank" rel="noopener noreferrer">Download</a></p>}
+        </div>
+
+        {/* Category */}
+        <div className='inputGp'>
+          <label>Category</label>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="Technical">Technical</option>
+            <option value="Poetry">Poetry</option>
+            <option value="Personal Experience">Personal Experience</option>
+            <option value="Interview Experience">Interview Experience</option>
+          </select>
+        </div>
+
+        {/* Instagram */}
         <div className='inputGp'>
           <label>Instagram Link (Optional)</label>
-          <input
-            type='url'
-            placeholder='https://instagram.com/yourprofile'
-            value={instagram}
-            onChange={(e) => setInstagram(e.target.value)}
-          />
+          <input type='url' placeholder='https://instagram.com/yourprofile' value={instagram} onChange={(e) => setInstagram(e.target.value)} />
         </div>
+
+        {/* GitHub */}
         <div className='inputGp'>
           <label>GitHub Link (Optional)</label>
-          <input
-            type='url'
-            placeholder='https://github.com/yourprofile'
-            value={github}
-            onChange={(e) => setGithub(e.target.value)}
-          />
+          <input type='url' placeholder='https://github.com/yourprofile' value={github} onChange={(e) => setGithub(e.target.value)} />
         </div>
-        <button onClick={createPost}>Publish Post</button>
+
+        <button onClick={handleSubmit}>{existingPost ? 'Update Post' : 'Publish Post'}</button>
       </div>
     </div>
   );
