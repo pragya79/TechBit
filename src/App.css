@@ -767,3 +767,81 @@ textarea {
     font-size: 12px;
   }
 }
+/* ===== Home Page Controls (Search, Filter, Sort) ===== */
+.controls {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.controls input[type="text"] {
+  flex: 1 1 200px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  transition: border-color 0.3s ease;
+}
+
+.controls input[type="text"]:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.controls select {
+  flex: 1 1 150px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.controls select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.controls button {
+  flex: 1 1 120px;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.controls button:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive adjustments for controls */
+@media screen and (max-width: 768px) {
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .controls input[type="text"],
+  .controls select,
+  .controls button {
+    flex: 1 1 100%;
+  }
+}

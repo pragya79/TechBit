@@ -7,7 +7,12 @@ import '../App.css';
 
 function Home({ isAuth }) {
   const [postList, setPostList] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [sortOrder, setSortOrder] = useState('newest'); // 'newest' or 'oldest'
+
   const postCollectionRef = collection(db, 'posts');
   const navigate = useNavigate();
 
@@ -22,21 +27,71 @@ function Home({ isAuth }) {
   useEffect(() => {
     const getPosts = async () => {
       const data = await getDocs(postCollectionRef);
-      setPostList(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      const posts = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+      setPostList(posts);
     };
     getPosts();
   }, [postCollectionRef]);
 
+  // Apply search, filter and sort
+  useEffect(() => {
+    let tempPosts = [...postList];
+
+    // Search by title
+    if (searchTerm) {
+      tempPosts = tempPosts.filter(post =>
+        post.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by category
+    if (categoryFilter !== 'All') {
+      tempPosts = tempPosts.filter(post => post.category === categoryFilter);
+    }
+
+    // Sort by date
+    tempPosts.sort((a, b) => {
+      const dateA = new Date(a.publicationDate);
+      const dateB = new Date(b.publicationDate);
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredPosts(tempPosts);
+  }, [postList, searchTerm, categoryFilter, sortOrder]);
+
   const openDialog = (post) => setSelectedPost(post);
   const closeDialog = () => setSelectedPost(null);
-
-  const editPost = (post) => {
-    navigate('/createpost', { state: { post } }); 
-  };
+  const editPost = (post) => navigate('/createpost', { state: { post } });
 
   return (
     <div className='homePage'>
-      {postList.map((post) => (
+      {/* Controls */}
+      <div className='controls'>
+        <input
+          type='text'
+          placeholder='Search by title...'
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+        >
+          <option value='All'>All Categories</option>
+          <option value='Technical'>Technical</option>
+          <option value='Poetry'>Poetry</option>
+          <option value='Personal Experience'>Personal Experience</option>
+          <option value='Interview Experience'>Interview Experience</option>
+        </select>
+
+        <button onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}>
+          Sort: {sortOrder === 'newest' ? 'Newest' : 'Oldest'}
+        </button>
+      </div>
+
+      {/* Posts */}
+      {filteredPosts.map((post) => (
         <div className='post' key={post.id} onClick={() => openDialog(post)}>
           <div className='postHeader'>
             <div className='title'>
@@ -95,6 +150,7 @@ function Home({ isAuth }) {
         </div>
       ))}
 
+      {/* Dialog */}
       {selectedPost && (
         <div className='dialogOverlay'>
           <div className='dialog'>
